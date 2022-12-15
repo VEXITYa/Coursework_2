@@ -25,17 +25,27 @@ class FrequencyRatio
     {
         auto first_delim_index = line.find_first_of(delim);
         auto second_delim_index = line.find_last_of(delim);
-        long double first = std::stod(line.substr(0, first_delim_index));
-        long double second = std::stod(line.substr(first_delim_index + 1, second_delim_index));
+        long double time = std::stod(line.substr(0, first_delim_index));
+        long double first = std::stod(line.substr(first_delim_index + 1, second_delim_index));
+        times.push_back(time);
         first_frequency.push_back(first);
-        second_frequency.push_back(second);
         if (with_time)
         {
-            long double time = std::stod(
+            long double second = std::stod(
                 line.substr(second_delim_index + 1, line.size() - second_delim_index)
             );
-            times.push_back(time);
+            second_frequency.push_back(second);
         }
+    }
+
+    void Output(std::vector<long double> a, std::vector<long double> b, std::string output_path, int howMuchStrings=-1)
+    {
+        std::ofstream file_out((output_path).c_str());
+        for (std::size_t i = 0; i < (howMuchStrings > 0 ? (std::size_t)howMuchStrings : a.size()); i++)
+        {
+            file_out << std::fixed << std::setprecision(30) << a[i] << ' ' << b[i] << std::endl;
+        }
+        file_out.close();
     }
 public:
     FrequencyRatio(std::string path, bool with_time=false)
@@ -83,25 +93,26 @@ public:
         }
     }
 
-    void PhasesOutput(std::string output_path)
+    void PhasesOutput(std::string output_path, int howMuchStrings=-1)
     {
-        std::ofstream file_out((output_path).c_str());
-        for (int i = 0; i < first_phases.size(); i++)
-        {
-            file_out << std::fixed << std::setprecision(30) << first_phases[i] << ' ' << second_phases[i] << std::endl;
-        }
-        std::cout << std::fixed << std::setprecision(30) << first_phases[0] << ' ' << second_phases[0] << std::endl;
-        file_out.close();
+        Output(first_phases, second_phases, output_path, howMuchStrings);
     }
 
-    void DerivativesOutput(std::string output_path)
+    void DerivativesOutput(std::string output_path, int howMuchStrings = -1)
+    {
+        Output(first_derivatives, second_derivatives, output_path, howMuchStrings);
+    }
+
+    void AllOutput(std::string output_path, int howMuchStrings = -1)
     {
         std::ofstream file_out((output_path).c_str());
-        for (int i = 0; i < first_derivatives.size(); i++)
+        for (std::size_t i = 0; i < (howMuchStrings > 0 ? (std::size_t)howMuchStrings : first_derivatives.size()); i++)
         {
-            file_out << std::fixed << std::setprecision(30) << first_derivatives[i] << ' ' << second_derivatives[i] << std::endl;
+            file_out << std::fixed << std::setprecision(30) << 
+                    times[i] << ' ' <<
+                    first_frequency[i] << ' ' <<
+                    second_frequency[i] << std::endl;
         }
-
         file_out.close();
     }
 };
@@ -114,6 +125,5 @@ int main()
     test1.FindDerivatives();
     test1.CalculatePhases();
     test1.PhasesOutput(output_path);
-    test1.DerivativesOutput("C:/Users/VEX1T/Documents/data_outderiv.txt");
 }
 
